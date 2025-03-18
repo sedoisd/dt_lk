@@ -1,10 +1,10 @@
 import datetime
 
 import sqlalchemy
-from flask import Flask, render_template, redirect, make_response, request, session, abort
+from flask import Flask, render_template, redirect, make_response, request, session, abort, jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
-from data import db_session
+from data import db_session, news_api
 from data.news import News
 from data.users import User
 from forms.news import NewsForm
@@ -27,9 +27,19 @@ def load_user(user_id):
     db_sess = db_session.create_session()
     return db_sess.query(User).get(user_id)
 
+@app.errorhandler(404)
+def not_found(error):
+    return make_response(jsonify({'error': 'Not found'}), 404)
+
+
+@app.errorhandler(400)
+def bad_request(_):
+    return make_response(jsonify({'error': 'Bad Request'}), 400)
 
 def main():
     db_session.global_init("db/blogs.db")
+    db_session.global_init("db/blogs.db")
+    app.register_blueprint(news_api.blueprint)
     app.run(port=8080, host='127.0.0.1')
 
 
